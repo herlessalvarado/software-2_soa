@@ -84,7 +84,12 @@ app.get("/api/v1/ciudad/:cityName/restaurantes", async (req, res) => {
 
   res.status(200).json({
     climaMañana: temperatureMax7Days[0],
-    restaurantes: nearbyRestaurants.slice(0, 3),
+    restaurantes: nearbyRestaurants.slice(0, 3).map((v) => {
+      return {
+        nombre: v.tags.name,
+        direccion: v.tags["addr:street"],
+      };
+    }),
   });
 });
 
