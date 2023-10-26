@@ -88,6 +88,50 @@ app.get("/api/v1/ciudad/:cityName/restaurantes", async (req, res) => {
   });
 });
 
+app.get("/api/v1/ciudad/:cityName/clima/manhana", async (req, res) => {
+  const placeName = req.params.cityName;
+
+  const coordinates = await getCoordinates(placeName);
+
+  if (!coordinates) {
+    return res.status(404).json({ message: "Lugar no encontrado" });
+  }
+
+  const { latitude, longitude } = coordinates;
+
+  const temperatureMax7Days = await getWeatherForecast(latitude, longitude);
+
+  if (temperatureMax7Days === null) {
+    return res.status(404).json({ message: "Pronóstico no encontrado" });
+  }
+
+  res.status(200).json({
+    climaMañana: temperatureMax7Days[0],
+  });
+});
+
+app.get("/api/v1/ciudad/:cityName/clima/7dias", async (req, res) => {
+  const placeName = req.params.cityName;
+
+  const coordinates = await getCoordinates(placeName);
+
+  if (!coordinates) {
+    return res.status(404).json({ message: "Lugar no encontrado" });
+  }
+
+  const { latitude, longitude } = coordinates;
+
+  const temperatureMax7Days = await getWeatherForecast(latitude, longitude);
+
+  if (temperatureMax7Days === null) {
+    return res.status(404).json({ message: "Pronóstico no encontrado" });
+  }
+
+  res.status(200).json({
+    clima7Dias: temperatureMax7Days,
+  });
+});
+
 app.listen(port, () => {
   console.log(`La aplicación está escuchando en el puerto ${port}`);
 });
