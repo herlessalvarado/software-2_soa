@@ -22,7 +22,7 @@ const User = mongoose.model("User", userSchema);
 
 app.use(bodyParser.json());
 
-app.post("/register", async (req, res) => {
+app.post("/auth/register", async (req, res) => {
   const { username, password } = req.body;
 
   try {
@@ -40,7 +40,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/auth/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
@@ -56,7 +56,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/protected", (req, res) => {
+app.get("/auth/protected", (req, res) => {
   const token = req.headers.authorization;
 
   if (!token) {

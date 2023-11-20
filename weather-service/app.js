@@ -1,18 +1,8 @@
 const express = require("express");
 const axios = require("axios");
-const { initialize, isEnabled } = require("unleash-client");
-
-initialize({
-  url: "http://localhost:4242/api",
-  appName: "your-app-name",
-  instanceId: "your-instance-id",
-  customHeaders: {
-    Authorization: "default:development.unleash-insecure-api-token",
-  },
-});
 
 const app = express();
-const port = 8000;
+const port = 3002;
 
 app.use(express.json());
 
@@ -69,63 +59,42 @@ async function getNearbyRestaurants(latitude, longitude) {
   }
 }
 
-app.get("/api/v1/ciudad/:cityName/restaurantes/:email", async (req, res) => {
-  const email = req.params.email;
+app.get("/weather/city/:cityName/restaurantes", async (req, res) => {
   const placeName = req.params.cityName;
 
-  const unleashContext = {
-    userId: email,
-  };
+  const coordinates = await getCoordinates(placeName);
 
-  if (isEnabled("test", unleashContext)) {
-    const coordinates = await getCoordinates(placeName);
-
-    if (!coordinates) {
-      return res.status(404).json({ message: "Lugar no encontrado" });
-    }
-
-    const { latitude, longitude } = coordinates;
-
-    res.status(200).json({
-      usedFeatureFlags: true,
-      latitude,
-      longitude,
-    });
-  } else {
-    const coordinates = await getCoordinates(placeName);
-
-    if (!coordinates) {
-      return res.status(404).json({ message: "Lugar no encontrado" });
-    }
-
-    const { latitude, longitude } = coordinates;
-
-    const temperatureMax7Days = await getWeatherForecast(latitude, longitude);
-
-    if (temperatureMax7Days === null) {
-      return res.status(404).json({ message: "Pronóstico no encontrado" });
-    }
-
-    const nearbyRestaurants = await getNearbyRestaurants(latitude, longitude);
-
-    if (nearbyRestaurants.length === 0) {
-      return res.status(404).json({ message: "Restaurantes no encontrados" });
-    }
-
-    res.status(200).json({
-      usedFeatureFlags: false,
-      climaMañana: temperatureMax7Days[0],
-      restaurantes: nearbyRestaurants.slice(0, 3).map((v) => {
-        return {
-          nombre: v.tags.name,
-          direccion: v.tags["addr:street"],
-        };
-      }),
-    });
+  if (!coordinates) {
+    return res.status(404).json({ message: "Lugar no encontrado" });
   }
+
+  const { latitude, longitude } = coordinates;
+
+  const temperatureMax7Days = await getWeatherForecast(latitude, longitude);
+
+  if (temperatureMax7Days === null) {
+    return res.status(404).json({ message: "Pronóstico no encontrado" });
+  }
+
+  const nearbyRestaurants = await getNearbyRestaurants(latitude, longitude);
+
+  if (nearbyRestaurants.length === 0) {
+    return res.status(404).json({ message: "Restaurantes no encontrados" });
+  }
+
+  res.status(200).json({
+    usedFeatureFlags: false,
+    climaMañana: temperatureMax7Days[0],
+    restaurantes: nearbyRestaurants.slice(0, 3).map((v) => {
+      return {
+        nombre: v.tags.name,
+        direccion: v.tags["addr:street"],
+      };
+    }),
+  });
 });
 
-app.get("/api/v1/ciudad/:cityName/clima/manhana", async (req, res) => {
+app.get("/weather/city/:cityName/tomorrow", async (req, res) => {
   const placeName = req.params.cityName;
 
   const coordinates = await getCoordinates(placeName);
@@ -147,7 +116,7 @@ app.get("/api/v1/ciudad/:cityName/clima/manhana", async (req, res) => {
   });
 });
 
-app.get("/api/v1/ciudad/:cityName/clima/7dias", async (req, res) => {
+app.get("/weather/city/:cityName/7dias", async (req, res) => {
   const placeName = req.params.cityName;
 
   const coordinates = await getCoordinates(placeName);
