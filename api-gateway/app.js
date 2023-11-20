@@ -22,13 +22,17 @@ app.use("/auth/*", (req, res, next) => {
 
 app.use("/weather/*", async (req, res, next) => {
   const token = req.headers.authorization;
-  const isValid = await axios.get("http://localhost:3000/auth/protected", {
-    headers: { authorization: token },
-  });
-  if (isValid.status === 200) {
-    weatherProxy(req, res, next);
-  } else {
-    res.status(isValid.statusCode).json(isValid.body);
+  try {
+    const isValid = await axios.get("http://localhost:3000/auth/protected", {
+      headers: { authorization: token },
+    });
+    if (isValid.status === 200) {
+      weatherProxy(req, res, next);
+    } else {
+      res.status(isValid.statusCode).json(isValid.body);
+    }
+  } catch (error) {
+    res.status(401).json({ message: "Unauthorized" });
   }
 });
 

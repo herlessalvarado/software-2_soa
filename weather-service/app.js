@@ -59,7 +59,7 @@ async function getNearbyRestaurants(latitude, longitude) {
   }
 }
 
-app.get("/weather/city/:cityName/restaurantes", async (req, res) => {
+app.get("/weather/city/:cityName/restaurants", async (req, res) => {
   const placeName = req.params.cityName;
 
   const coordinates = await getCoordinates(placeName);
@@ -116,7 +116,7 @@ app.get("/weather/city/:cityName/tomorrow", async (req, res) => {
   });
 });
 
-app.get("/weather/city/:cityName/7dias", async (req, res) => {
+app.get("/weather/city/:cityName/7days", async (req, res) => {
   const placeName = req.params.cityName;
 
   const coordinates = await getCoordinates(placeName);
